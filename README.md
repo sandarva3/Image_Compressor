@@ -1,6 +1,6 @@
 A very efficient program to compress large image files without losing quality.
 
-It reduces file size significantly while there'd almost no reduction in image quality.
+It reduces file size significantly while there'd be almost no reduction in image quality.
 
 There are few dependencies which needs to be installed before running this program. You can run it by installing them manually, there are only few.
 
