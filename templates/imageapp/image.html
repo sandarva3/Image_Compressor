@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'imageapp/image.css' %}">
+</head>
+<body>
+    <h1 class="title">Image Compressor</h1>
+    <div class="container">
+            <div class="preview">
+                <img id="preview-image" src="" />
+            </div>
+            <form method="post" action="{% url 'image' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+    
+                <div class="upload-box">
+                    <input required type="file" name="image" id="image" class="inputfile" accept="image/*" />
+                    <label for="image" title="upload your image" class="upload-label">
+                        <span id="file-name">Choose an Image</span>
+                        <span class="upload-icon">&#8593;</span>
+                    </label>
+    
+                    <br /><br /><br />
+    
+                    <div id="range-container">
+                        <input type="range" id="compression-range" name="compression_percentage"
+                            title="Set compression percentage" min="0" max="100" step="1" value="50" />
+                        <span id="range-value">50%</span>
+                    </div>
+    
+                    <br />
+    
+                    <button type="submit" id="compress-btn" title="Continue to compress image">
+                        Compress
+                    </button>
+                    <p id="message" style="color: rgb(46, 46, 255); visibility: hidden;">wait! Image is being compressed...</p>
+                    <p id="response"></p>
+                    <a id="download-btn" href="#" download style="visibility: hidden" title="Download Compressed Image">
+                        Download Compressed Image &#8595;</a>
+                    </div>
+            </form>
+        </div>
+    
+        <script type="text/javascript" src="{% static 'imageapp/image.js' %}"></script>
+        
+</body>
+</html>
