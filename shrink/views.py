@@ -29,7 +29,10 @@ def uploadImg_view(request):
         fileName = response.filename
         filePath = os.path.join(settings.MEDIA_ROOT, fileName)
         
-        return StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
+        responseClient = StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
+        responseClient['Content-Disposition'] = f'attachment; filename = {fileName}'
+        
+        return responseClient
     else:
         return HttpResponse("Not a POST request")
 
