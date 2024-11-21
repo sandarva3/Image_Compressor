@@ -16,18 +16,18 @@ def imageapp_view(request):
         uploaded_file = request.FILES['image']
         compression_percentage = int(request.POST.get('compression_percentage'))
 
-        # Calculate compression quality
+
         quality = calculate_quality(compression_percentage)
 
-        # Read the image using PIL
+        # Reading image using PIL
         img = Image.open(uploaded_file)
 
-        # Compress the image
+        # Compression
         buffer = BytesIO()
         img.save(buffer, format="JPEG", quality=quality)
         buffer.seek(0)
 
-        # Save the compressed image
+
         file_storage = FileSystemStorage()
         file_path = file_storage.save('compressed_' + uploaded_file.name, buffer)
 
