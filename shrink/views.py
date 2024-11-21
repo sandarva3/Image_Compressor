@@ -6,6 +6,8 @@ import os
 from os.path import getsize
 from django.http import FileResponse, JsonResponse, HttpResponse, StreamingHttpResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 def calculate_quality(user_input):
@@ -22,16 +24,19 @@ def sendFile(filePath):
     os.remove(filePath)
 
 
-
+@csrf_exempt
 def uploadImg_view(request):
     if request.method == "POST":
-        response = imageapp_view(request)
-        fileName = response.filename
+        response = json.loads(imageapp_view(request).content)
+        print(f"The response From imageapp_view function is: {response}")
+        fileName = response['filename']
+        print(f"The name from RESPONSE is: {fileName}")
         filePath = os.path.join(settings.MEDIA_ROOT, fileName)
         
         responseClient = StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
-        responseClient['Content-Disposition'] = f'attachment; filename = {fileName}'
+        responseClient['Content-Disposition'] = f"attachment; filename={fileName}"
         
+        print(f"The Content Disposition is: {responseClient['Content-Disposition']}")
         return responseClient
     else:
         return HttpResponse("Not a POST request")
