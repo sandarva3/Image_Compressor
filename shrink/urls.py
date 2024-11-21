@@ -7,5 +7,6 @@ from .views import (
 
 urlpatterns = [
     path('', imageapp_view, name='image'),
-    path('download_compressed_image/', download_view, name="image_download")
+    path('download_compressed_image/', download_view, name="image_download"),
+
 ]

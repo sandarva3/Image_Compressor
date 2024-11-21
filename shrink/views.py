@@ -11,11 +11,36 @@ from django.conf import settings
 def calculate_quality(user_input):
     return int((100 - user_input) * 0.9 + 10)
 
+
+def sendFile(filePath):
+    with open(filePath, 'rb') as file:
+        while True:
+            data = file.read(8192)
+            if not data:
+                break
+            yield data
+    os.remove(filePath)
+
+
+
+def uploadImg_view(request):
+    if request.method == "POST":
+        response = imageapp_view(request)
+        fileName = response.filename
+        filePath = os.path.join(settings.MEDIA_ROOT, fileName)
+        
+        return StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
+    else:
+        return HttpResponse("Not a POST request")
+
+
+
 def imageapp_view(request):
     if request.method == 'POST':
         uploaded_file = request.FILES['image']
+        if not uploaded_file:
+            return HttpResponse("No Image is Provided.")
         compression_percentage = int(request.POST.get('compression_percentage'))
-
 
         quality = calculate_quality(compression_percentage)
 
@@ -27,19 +52,14 @@ def imageapp_view(request):
         img.save(buffer, format="JPEG", quality=quality)
         buffer.seek(0)
 
-
         file_storage = FileSystemStorage()
         file_path = file_storage.save('compressed_' + uploaded_file.name, buffer)
 
         # response = FileResponse(open(file_path, 'rb'), content_type="image/jpeg")
-
-
-        compressed_file_path = os.path.join(file_storage.location, file_path)
+        compressed_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
         compressed_file_size = getsize(compressed_file_path)
         rounded_size = round((compressed_file_size/1024), 2)
 
-        print(f"File Storage Location is: {file_storage.location}")
-        print(f"File path is :{file_path}")
         print(f"Compressed file path is : {compressed_file_path}")
         print(f"Compressed file size is: {rounded_size}")
 
@@ -52,12 +72,15 @@ def imageapp_view(request):
 
     return render(request, 'imageapp/image.html')
 
+
+
+
 def download_view(request):
     if request.method == "GET":
         filename = request.GET.get('filename')
 
         try:
-            file_path = os.path.join(settings.BASE_DIR, 'media', filename)
+            file_path = os.path.join(settings.MEDIA_ROOT, filename)
             print(f"FILE PATH IS : {file_path}")
             # Generator function to read file in chunks
             def file_stream():
