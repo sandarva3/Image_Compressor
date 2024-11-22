@@ -35,6 +35,8 @@ def uploadImg_view(request):
         
         responseClient = StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
         responseClient['Content-Disposition'] = f"attachment; filename={fileName}"
+        responseClient['fileName'] = fileName
+
         
         print(f"The Content Disposition is: {responseClient['Content-Disposition']}")
         return responseClient
