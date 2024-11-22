@@ -103,10 +103,12 @@ def download_view(request):
 
                 os.remove(file_path)
 
-            response = StreamingHttpResponse(file_stream(), content_type='image/jpeg')
-            response['Content-Disposition'] = f'attachment; filename={filename}'
+            #response = StreamingHttpResponse(file_stream(), content_type='image/jpeg')
+            #response['Content-Disposition'] = f'inline; filename={filename}'
+            response = FileResponse(open(file_path, 'rb'), content_type='image/jpeg')
+            response['Content-Disposition'] = 'inline; filename="image.jpg"'
             return response
-
+           
         except Exception as e:
             print(f"Something went Wrong. Exception: {e}")
             return HttpResponse("Something Went Wrong. EXCEPTION !")
