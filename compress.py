@@ -3,8 +3,8 @@ import requests
 
 
 
-destination = "Destination path"
-source = "Src path"
+source = "/home/sandarva3/Pictures/check"
+destination = "/home/sandarva3/Pictures/results"
 
 # print("Writing in the Source folder.")
 # with open(f"{source}/check.txt", 'w') as f:
