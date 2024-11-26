@@ -30,6 +30,7 @@ async def main():
 
 asyncio.run(main())
 
+
 '''
 
 
@@ -50,18 +51,21 @@ async def process_data(task_id, data):
 
 async def main():
     # Simulating 5 concurrent tasks
-    tasks = []
-    for i in range(1, 6):
-        tasks.append(fetch_data(i))
+    tasks = [fetch_data(i) for i in range(1,6)]
+    # tasks = []
+    # for i in range(1, 6):
+    #     tasks.append(fetch_data(i))
 
     # Fetch data concurrently
     results = await asyncio.gather(*tasks)
 
     # Process each fetched result
-    process_tasks = []
-    for i, result in enumerate(results):
-        task = process_data((i+1), result)
-        process_tasks.append(task)
+
+    process_tasks = [process_data(i, result) for i,result in enumerate(results)]
+    #process_tasks = []
+    # for i, result in enumerate(results):
+    #     task = process_data((i+1), result)
+    #     process_tasks.append(task)
 
     await asyncio.gather(*process_tasks)
 
