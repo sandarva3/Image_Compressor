@@ -20,11 +20,9 @@ destination = "/home/sandarva3/Pictures/results"
 count = 1
 
 
-
-
 os.chdir(source)
 
-'''
+
 def upload(filePath, fileName, compressionAmount):
     destinationPath = os.path.join(destination, fileName)
     with open(filePath, 'rb') as file:
@@ -54,6 +52,9 @@ for f in os.listdir():
     print(f"File no: {count}.")
     upload(filePath, fileName, 75)
     count += 1
+
+
+
 '''
 
 async def upload(filePath, fileName, compressionAmount, counter):
@@ -89,3 +90,6 @@ async def fetchFile():
     await asyncio.gather(*uploaded_files)
 
 asyncio.run(fetchFile())
+
+
+'''

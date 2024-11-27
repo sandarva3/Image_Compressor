@@ -8,14 +8,14 @@ from django.http import FileResponse, JsonResponse, HttpResponse, StreamingHttpR
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import json
-import asyncio
 
 
-async def calculate_quality(user_input):
+
+def calculate_quality(user_input):
     return int((100 - user_input) * 0.9 + 10)
 
 
-async def sendFile(filePath):
+def sendFile(filePath):
     with open(filePath, 'rb') as file:
         while True:
             data = file.read(8192)
@@ -26,9 +26,10 @@ async def sendFile(filePath):
 
 
 @csrf_exempt
-async def uploadImg_view(request):
+def uploadImg_view(request):
     if request.method == "POST":
         response = json.loads(imageapp_view(request).content)
+
         print(f"The response From imageapp_view function is: {response}")
         fileName = response['filename']
         print(f"The name from RESPONSE is: {fileName}")
@@ -46,7 +47,7 @@ async def uploadImg_view(request):
 
 
 
-async def imageapp_view(request):
+def imageapp_view(request):
     if request.method == 'POST':
         uploaded_file = request.FILES['image']
         if not uploaded_file:
