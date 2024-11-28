@@ -14,7 +14,7 @@ async def upload(filePath, fileName, compressionAmount, counter):
         async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
             with open(filePath, 'rb') as file:
                 response = await client.post(
-                    'http://127.0.0.1:8000/firstEndpoint/',
+                    'http://127.0.0.1:8000/uploadImg/',
                     files={'image': (fileName, file)},
                     data={'compression_percentage': compressionAmount}
                 )

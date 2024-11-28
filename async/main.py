@@ -30,12 +30,12 @@ async def upload_img_view(image: UploadFile, compression_percentage: int = Form(
         img = Image.open(image.file)
         quality = await calculate_quality(compression_percentage)
 
-        # Compress image and save to buffer
+        # Compression
         buffer = BytesIO()
         img.save(buffer, format="JPEG", quality=quality)
         buffer.seek(0)
 
-        # Save to filesystem
+    
         file_name = f"compressed_{image.filename}"
         file_path = os.path.join(MEDIA_ROOT, file_name)
         with open(file_path, "wb") as out_file:

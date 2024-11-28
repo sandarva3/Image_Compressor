@@ -1,21 +1,22 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from PIL import Image
 from django.core.files.storage import FileSystemStorage
 from io import BytesIO
 import os
 from os.path import getsize
-from django.http import FileResponse, JsonResponse, HttpResponse, StreamingHttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import sync_to_async
+import asyncio
 import json
 
 
-
-def calculate_quality(user_input):
+async def calculate_quality(user_input):
     return int((100 - user_input) * 0.9 + 10)
 
 
-def sendFile(filePath):
+async def sendFile(filePath):
     with open(filePath, 'rb') as file:
         while True:
             data = file.read(8192)
@@ -26,65 +27,71 @@ def sendFile(filePath):
 
 
 @csrf_exempt
-def uploadImg_view(request):
+async def uploadImg_view(request):
     if request.method == "POST":
-        response = json.loads(imageapp_view(request).content)
+        response_data = await imageapp_view(request)
 
-        print(f"The response From imageapp_view function is: {response}")
-        fileName = response['filename']
-        print(f"The name from RESPONSE is: {fileName}")
-        filePath = os.path.join(settings.MEDIA_ROOT, fileName)
-        
-        responseClient = StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
-        responseClient['Content-Disposition'] = f"attachment; filename={fileName}"
-        responseClient['fileName'] = fileName
+        try:
+            response = json.loads(response_data.content)
+            fileName = response.get('filename')
+            if not fileName:
+                raise ValueError("Filename missing in response")
+
+            filePath = os.path.join(settings.MEDIA_ROOT, fileName)
 
         
-        print(f"The Content Disposition is: {responseClient['Content-Disposition']}")
-        return responseClient
+            responseClient = StreamingHttpResponse(sendFile(filePath), content_type="image/jpeg")
+            responseClient['Content-Disposition'] = f"attachment; filename={fileName}"
+            responseClient['fileName'] = fileName
+
+            return responseClient
+        except Exception as e:
+            print(f"Error handling response: {e}")
+            return HttpResponse("An error occurred while processing the response.", status=500)
     else:
         return HttpResponse("Not a POST request")
 
 
-
-def imageapp_view(request):
+async def imageapp_view(request):
     if request.method == 'POST':
-        uploaded_file = request.FILES['image']
+        uploaded_file = request.FILES.get('image')
         if not uploaded_file:
-            return HttpResponse("No Image is Provided.")
-        compression_percentage = int(request.POST.get('compression_percentage'))
+            return JsonResponse({"error": "No image provided"}, status=400)
 
-        quality = calculate_quality(compression_percentage)
+        try:
+            compression_percentage = int(request.POST.get('compression_percentage', 50))
+        except ValueError:
+            return JsonResponse({"error": "Invalid compression percentage"}, status=400)
 
-        # Reading image using PIL
-        img = Image.open(uploaded_file)
+        quality = await calculate_quality(compression_percentage)
 
-        # Compression
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG", quality=quality)
-        buffer.seek(0)
+        try:
+            # Reading image using PIL
+            img = Image.open(uploaded_file)
 
-        file_storage = FileSystemStorage()
-        file_path = file_storage.save('compressed_' + uploaded_file.name, buffer)
+            # Compression
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG", quality=quality)
+            buffer.seek(0)
 
-        # response = FileResponse(open(file_path, 'rb'), content_type="image/jpeg")
-        compressed_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
-        compressed_file_size = getsize(compressed_file_path)
-        rounded_size = round((compressed_file_size/1024), 2)
+            file_storage = FileSystemStorage()
+            file_name = f"compressed_{uploaded_file.name}"
+            file_path = await sync_to_async(file_storage.save)(file_name, buffer)
 
-        print(f"Compressed file path is : {compressed_file_path}")
-        print(f"Compressed file size is: {rounded_size}")
+            compressed_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            compressed_file_size = getsize(compressed_file_path)
+            rounded_size = round((compressed_file_size / 1024), 2)
 
+            return JsonResponse({
+                'status': 'success',
+                'filesize': rounded_size,
+                'filename': file_name
+            })
+        except Exception as e:
+            print(f"Error compressing file: {e}")
+            return JsonResponse({"error": "An error occurred during compression."}, status=500)
 
-        return JsonResponse({
-            'status':'success',
-            'filesize': rounded_size,
-            'filename': file_path
-        })
-
-    return render(request, 'imageapp/image.html')
-
-
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
 def download_view(request):
@@ -93,7 +100,8 @@ def download_view(request):
 
         try:
             file_path = os.path.join(settings.MEDIA_ROOT, filename)
-            print(f"FILE PATH IS : {file_path}")
+            print(f"FILE PATH IS: {file_path}")
+
             # Generator function to read file in chunks
             def file_stream():
                 with open(file_path, 'rb') as f:
@@ -102,17 +110,14 @@ def download_view(request):
                         if not data:
                             break
                         yield data
-
                 os.remove(file_path)
 
-            #response = StreamingHttpResponse(file_stream(), content_type='image/jpeg')
-            #response['Content-Disposition'] = f'inline; filename={filename}'
-            response = FileResponse(open(file_path, 'rb'), content_type='image/jpeg')
-            response['Content-Disposition'] = 'inline; filename="image.jpg"'
+            response = StreamingHttpResponse(file_stream(), content_type='image/jpeg')
+            response['Content-Disposition'] = f'inline; filename="{filename}"'
             return response
-           
-        except Exception as e:
-            print(f"Something went Wrong. Exception: {e}")
-            return HttpResponse("Something Went Wrong. EXCEPTION !")
 
-    return HttpResponse('Something went wrong!')
+        except Exception as e:
+            print(f"Something went wrong. Exception: {e}")
+            return HttpResponse("Something went wrong. EXCEPTION!", status=500)
+
+    return HttpResponse("Invalid request method", status=405)
