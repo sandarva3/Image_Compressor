@@ -7,8 +7,7 @@ import os
 
 
 app = FastAPI()
-MEDIA_ROOT = "/home/sandarva3/Desktop/projects/fastapi/media"
-
+MEDIA_ROOT = "/home/sandarva3/Desktop/projects/pencil/imageapp/async/media"
 async def calculate_quality(user_input: int):
     return int((100 - user_input) * 0.9 + 10)
 

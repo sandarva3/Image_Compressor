@@ -1,1 +1,1 @@
-MEDIA_ROOT = "/home/sandarva3/Desktop/projects/fastapi/media"
+MEDIA_ROOT = "/home/sandarva3/Desktop/projects/pencil/imageapp/async/media"
