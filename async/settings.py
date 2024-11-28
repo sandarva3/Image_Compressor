@@ -1,0 +1,1 @@
+MEDIA_ROOT = "/home/sandarva3/Desktop/projects/fastapi/media"

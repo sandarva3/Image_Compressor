@@ -4,8 +4,8 @@ import asyncio
 
 
 
-source = "/home/sandarva3/Pictures/check"
-destination = "/home/sandarva3/Pictures/results"
+source = "/home/sandarva3/Pictures/Chaurasi Photos"
+destination = "/home/sandarva3/Pictures/compressedPhotos2"
 
 # print("Writing in the Source folder.")
 # with open(f"{source}/check.txt", 'w') as f:
@@ -50,7 +50,7 @@ for f in os.listdir():
     filePath = os.path.join(source, f)
     fileName = str(f)
     print(f"File no: {count}.")
-    upload(filePath, fileName, 75)
+    upload(filePath, fileName, 50)
     count += 1
 
 
