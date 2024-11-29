@@ -7,9 +7,9 @@ from os.path import getsize
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from asgiref.sync import sync_to_async
 import asyncio
 import json
+#from asgiref.sync import sync_to_async
 
 
 async def calculate_quality(user_input):
@@ -76,7 +76,8 @@ async def imageapp_view(request):
 
             file_storage = FileSystemStorage()
             file_name = f"compressed_{uploaded_file.name}"
-            file_path = await sync_to_async(file_storage.save)(file_name, buffer)
+            #file_path = await sync_to_async((file_storage.save))(file_name, buffer)
+            file_path = (file_storage.save)(file_name, buffer)
 
             compressed_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
             compressed_file_size = getsize(compressed_file_path)
